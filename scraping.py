@@ -13,18 +13,60 @@ def get_trades():
     driver = webdriver.Chrome()
     driver.get(trades_url)
     trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
+    ret = []
     for trade in trades:
+        data = {}
+
+
+        # get date
         date = trade.find_element(By.XPATH, './/div[@class="event-date"]')
-        print(date.text)
+        trade_details = date.find_element(By.XPATH, './/a').get_attribute('href')
+
+
+        # get teams
         teamLeft = trade.find_element(By.XPATH, './/div[@class="team left"]')
         teamRight = trade.find_element(By.XPATH, './/div[@class="team right"]')
-
         isThirdTeam = element_exists(trade, './/div[@class="team center"]')
-        teamCenter = trade.find_element(By.XPATH, './/div[@class="team center"]') if isThirdTeam else None
+        if isThirdTeam:
+            teamCenter = trade.find_element(By.XPATH, './/div[@class="team center"]')
+            teams = [teamLeft, teamCenter, teamRight]
+        else:
+            teams = [teamLeft, teamRight]
+        
 
-        print(repr(teamLeft.text), repr(teamCenter.text) if isThirdTeam else None, repr(teamRight.text))
+        # parse the data from the teams
+        parsedTeams = []
+        for team in teams:
+            teamData = {}
+            teamName = team.find_element(By.XPATH, './/div[@class="team-name"]').text
+            details = team.find_elements(By.XPATH, './/div[@class="playerDetails"]')
+            acq = []
+            for detail in details:
+                desc = detail.text
+                if element_exists(detail, './/a'):
+                    link = detail.find_element(By.XPATH, './/a').get_attribute('href')
+                else:
+                    link = None
+                acq.append({'desc': desc, 'link': link})            
+            icon = team.find_element(By.XPATH, './/img').get_attribute('src')
+            
+            teamData['name'] = teamName
+            teamData['icon'] = icon
+            teamData['acq'] = acq
+            parsedTeams.append(teamData)
+
+        # add data to the return list
+        data["date"] = date.text[:-10]
+        data["details"] = trade_details
+        data["teams"] = parsedTeams
+
+
+        ret.append(data)
+        print(data)
         break
+
     driver.quit()
+    return ret
 
 
 def get_signings():

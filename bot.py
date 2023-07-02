@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import scraping
+import utils
+import time
 
 
 def run_discord_bot():
@@ -28,9 +30,15 @@ def run_discord_bot():
         if message.content == 'ping':
             await message.channel.send('pong')
 
+    # scrape every minute
     @tasks.loop(minutes=1)
     async def get_trades_and_signings():
-        scraping.get_trades()
+        for data in scraping.get_trades():
+            embed = utils.create_trade_embed(data)
+            print(embed)
+            await client.get_channel(1125077670816919612).send(embed=embed)
+            time.sleep(5)
+
         
 
 
