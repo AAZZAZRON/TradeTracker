@@ -16,7 +16,6 @@ def setLastTradeShown(data):
 
 def isLastSigningShown(data):
     db = pickledb.load('data.db', False)
-    print(data, db.get('last_signing'))
     if db.exists('last_signing'):
         return db.get('last_signing') == data
     return True  # if key doesn't exist, then it's the first time running the bot
