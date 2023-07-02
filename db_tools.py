@@ -33,3 +33,25 @@ def getChannels():
     if db.exists('channels'):
         return db.get('channels')
     return []
+
+
+def addChannel(channel_id):
+    db = pickledb.load('data.db', False)
+    channels = db.get('channels') or []
+    if channel_id not in channels:
+        channels.append(channel_id)
+        db.set('channels', channels)
+        db.dump()  # save the db
+        return True
+    return False
+
+
+def removeChannel(channel_id):
+    db = pickledb.load('data.db', False)
+    channels = db.get('channels') or []
+    if channel_id in channels:
+        channels.remove(channel_id)
+        db.set('channels', channels)
+        db.dump()  # save the db
+        return True
+    return False
