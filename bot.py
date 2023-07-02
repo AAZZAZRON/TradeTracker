@@ -1,6 +1,6 @@
 import os
 import discord
-from discord.ext import commands, tasks
+from discord.ext import tasks
 from dotenv import load_dotenv
 import scraping
 import utils
@@ -49,8 +49,8 @@ def run_discord_bot():
                 await message.channel.send("Channel is not subscribed to updates. No changes made.")
 
 
-    # scrape every minute
-    @tasks.loop(minutes=1)
+    # scrape 5 minutes
+    @tasks.loop(minutes=5)
     async def get_trades_and_signings():
         # get all subscribed channels
         channels = db_tools.getChannels() # or [1125077670816919612]

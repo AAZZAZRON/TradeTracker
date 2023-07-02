@@ -69,10 +69,10 @@ def get_trades():
         data["teams"] = parsedTeams
 
         
-        # # check if these are new trades
-        # if db_tools.isLastTradeShown(data):
-        #     db_tools.setLastTradeShown(data)
-        #     break
+        # check if these are new trades
+        if db_tools.isLastTradeShown(data):
+            db_tools.setLastTradeShown(data)
+            break
 
         # if new trade, add to return list
         ret.append(data)
