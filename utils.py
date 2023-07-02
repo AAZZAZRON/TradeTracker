@@ -4,7 +4,7 @@ def create_trade_embed(data):
     embed = discord.Embed()
     embed.title = f'TRADE: {data["date"]}'
     embed.url = data["details"]
-    embed.set_thumbnail(url=data["teams"][0]["icon"])
+    embed.set_thumbnail(url=data["teams"][0]["icon"]) # TODO: merge team icons together
 
     for team in data["teams"]:
         name = team["name"]
@@ -21,5 +21,7 @@ def create_trade_embed(data):
                 value += f"- {desc}\n"
 
         embed.add_field(name=f"{name} Acquire:", value=value, inline=False)
+    
+
     return embed
 

@@ -18,6 +18,9 @@ def run_discord_bot():
     # Event: on_ready
     @client.event
     async def on_ready():
+        if os.path.exists('data.db'):  # clear db on startup
+            os.remove('data.db')
+
         print(f'{client.user} is now running!')
         get_trades_and_signings.start()
 

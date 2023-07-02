@@ -1,19 +1,27 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import checkdb
 
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
 
 
+# checks if an element exists with the given xpath
 def element_exists(el, xpath):
     return len(el.find_elements(By.XPATH, xpath)) > 0
 
 
+'''
+scrapes website for trades
+returns all the ones that have not been shown (up to however many on initial load)
+'''
 def get_trades():
     driver = webdriver.Chrome()
     driver.get(trades_url)
     trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
     ret = []
+
+    # get all of the data
     for trade in trades:
         data = {}
 
@@ -60,10 +68,16 @@ def get_trades():
         data["details"] = trade_details
         data["teams"] = parsedTeams
 
+        
+        # check if these are new trades
+        if checkdb.isLastTradeShown(data):
+            print(len(ret))
+            checkdb.setLastTradeShown(data)
+            break
 
+        # if new trade, add to return list
         ret.append(data)
-        print(data)
-        break
+
 
     driver.quit()
     return ret
