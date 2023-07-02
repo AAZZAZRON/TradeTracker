@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import checkdb
+import db_tools
 
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
@@ -70,9 +70,8 @@ def get_trades():
 
         
         # check if these are new trades
-        if checkdb.isLastTradeShown(data):
-            print(len(ret))
-            checkdb.setLastTradeShown(data)
+        if db_tools.isLastTradeShown(data):
+            db_tools.setLastTradeShown(data)
             break
 
         # if new trade, add to return list
@@ -83,18 +82,84 @@ def get_trades():
     return ret
 
 
+'''
+scrapes website for signings
+returns all the ones that have not been shown (up to however many on initial load)
+'''
 def get_signings():
     driver = webdriver.Chrome()
     driver.get(signings_url)
-    signings = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
+    signings = driver.find_element(By.XPATH, '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(By.XPATH, './/div[@class="event-details"]')
     date = ''
+    ret = []
     for signing in signings:
+        # swap out the date if it changes
         if element_exists(signing, './/div[@class="event-date"]'):
             date = signing.find_element(By.XPATH, './/div[@class="event-date"]').text
-        data = signing.find_element(By.XPATH, './/div[@class="EventDetails__cont"]')
-        print(data.text)
-        break
+        elif element_exists(signing, './/div[@class="event-date tail"]'):
+            date = signing.find_element(By.XPATH, './/div[@class="event-date tail"]').text
+
+
+        # get the data for the signing and ignore mobile data
+        signingData = signing.find_element(By.XPATH, './/div[@class="EventDetails__cont"]')
+
+
+        # team data
+        teamDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col team-details"]')
+        teamAbbr = teamDiv.text
+        teamIcon = teamDiv.find_element(By.XPATH, './/img').get_attribute('src')
+
+
+        # contract data
+        contract = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-total"]').text
+        length = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-length"]').text.replace("yr", "year")
+        capHit = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-cap-hit"]').text 
+        contractType = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-type"]').text 
+
+
+        # player data
+        nameDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col player-name"]')
+        name = nameDiv.text
+        nameLink = nameDiv.find_element(By.XPATH, './/a').get_attribute('href')
+
+        age = signingData.find_element(By.XPATH, './/div[@class="signings-col player-age"]').text 
+        position = signingData.find_element(By.XPATH, './/div[@class="signings-col player-position"]').text 
+        tradeDetails = signingData.find_element(By.XPATH, './/div[@class="signings-col signings-details"]').find_element(By.XPATH, './/a').get_attribute('href')
+        
+        data = {
+            'date': date,
+            'team': {
+                "name": teamAbbr, # TODO: change to full name
+                'abbr': teamAbbr,
+                'icon': teamIcon
+            },
+            'contract': {
+                'total': contract,
+                'length': length,
+                'capHit': capHit,
+                'type': contractType
+            },
+            'player': {
+                'name': name,
+                'link': nameLink,
+                'age': age,
+                'position': position,
+            },
+            'details': tradeDetails,
+        }
+
+
+        # check if these are new signings
+        if db_tools.isLastSigningShown(data):
+            db_tools.setLastSigningShown(data)
+            break
+
+        # print(data)
+        ret.append(data)
+
+
     driver.quit()
+    return ret
 
 
 # if __name__ == '__main__':

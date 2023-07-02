@@ -1,7 +1,8 @@
 import discord
 
+
 def create_trade_embed(data):
-    embed = discord.Embed()
+    embed = discord.Embed(color=0x50afaa)
     embed.title = f'TRADE: {data["date"]}'
     embed.url = data["details"]
     embed.set_thumbnail(url=data["teams"][0]["icon"]) # TODO: merge team icons together
@@ -25,3 +26,21 @@ def create_trade_embed(data):
 
     return embed
 
+
+def create_signing_embed(data):
+    embed = discord.Embed(color=0xe1b51e)
+    embed.title = f'SIGNING: {data["player"]["name"]} to {data["team"]["name"]}'
+    embed.description = f'{data["date"]}'
+    embed.url = data["details"]
+    embed.set_thumbnail(url=data["team"]["icon"])
+
+    player = data["player"]
+    player_value = f"{player['name']} - {player['position']}\n{player['age']} years old"
+    embed.add_field(name=f"Player: ", value=player_value, inline=False)
+
+    contract = data["contract"]
+    contract_value = f"{contract['total']} x {contract['length']}\nCap Hit: {contract['capHit']}\nType: {contract['type']}"
+    embed.add_field(name=f"Contract: ", value=contract_value, inline=False)
+
+
+    return embed
