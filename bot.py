@@ -20,6 +20,7 @@ def run_discord_bot():
     # Event: on_ready
     @client.event
     async def on_ready():
+        db_tools.init_db()  # remove keys from previous runs
         print(f'{client.user} is now running!')
         get_trades_and_signings.start()
 

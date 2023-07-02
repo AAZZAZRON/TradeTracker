@@ -1,6 +1,15 @@
 import pickledb
 
 
+def init_db():
+    db = pickledb.load('data.db', False)
+    if db.exists('last_trade'):
+        db.rem('last_trade')
+    if db.exists('last_signing'):
+        db.rem('last_signing')
+    db.dump()  # save the db
+
+
 def isLastTradeShown(data):
     db = pickledb.load('data.db', False)
     if db.exists('last_trade'):
