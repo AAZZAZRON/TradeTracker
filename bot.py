@@ -29,8 +29,7 @@ def run_discord_bot():
     async def on_message(message):
         if message.author == client.user:
             return
-        print(message.content)
-        if message.content == 'ping':
+        if message.content == '!ping':
             await message.channel.send('pong')
         elif message.content == "!subscribechannel":  # add channel to get updates
             if not message.author.guild_permissions.administrator:
