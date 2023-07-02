@@ -20,6 +20,7 @@ def get_trades():
     driver.get(trades_url)
     trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
     ret = []
+    first = None
 
     # get all of the data
     for trade in trades:
@@ -68,11 +69,15 @@ def get_trades():
         data["details"] = trade_details
         data["teams"] = parsedTeams
 
+
+        if first is None:
+            first = data
+            
         
         # check if these are new trades
         if db_tools.isLastTradeShown(data):
             print("setting last trade:", data)
-            db_tools.setLastTradeShown(data)
+            db_tools.setLastTradeShown(first)
             break
 
         # if new trade, add to return list
@@ -93,6 +98,8 @@ def get_signings():
     signings = driver.find_element(By.XPATH, '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(By.XPATH, './/div[@class="event-details"]')
     date = ''
     ret = []
+    first = None
+
     for signing in signings:
         # swap out the date if it changes
         if element_exists(signing, './/div[@class="event-date"]'):
@@ -149,14 +156,17 @@ def get_signings():
             'details': tradeDetails,
         }
 
+        if first is None:
+            first = data
 
         # check if these are new signings
         if db_tools.isLastSigningShown(data):
             print("setting last signup:", data)
-            db_tools.setLastSigningShown(data)
+            db_tools.setLastSigningShown(first)
             break
 
         ret.append(data)
+
 
 
     driver.quit()
