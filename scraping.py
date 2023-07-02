@@ -72,11 +72,11 @@ def get_trades():
 
         if first is None:
             first = data
-            
+
         
         # check if these are new trades
         if db_tools.isLastTradeShown(data):
-            print("setting last trade:", data)
+            print("setting last trade:", first)
             db_tools.setLastTradeShown(first)
             break
 
@@ -161,7 +161,7 @@ def get_signings():
 
         # check if these are new signings
         if db_tools.isLastSigningShown(data):
-            print("setting last signup:", data)
+            print("setting last signup:", first)
             db_tools.setLastSigningShown(first)
             break
 
