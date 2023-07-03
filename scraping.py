@@ -2,17 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
-
-
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
-
-
-
 '''
 scrapes website for trades
 returns all the ones that have not been shown (up to however many on initial load)
 '''
+
+
 def get_trades():
   chrome_options = Options()
   chrome_options.add_argument('--no-sandbox')
@@ -26,9 +23,8 @@ def get_trades():
   trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
   ret = []
 
-
   # get all of the data
-  for trade in trades:
+  for trade in trades[:5]:
     data = {}
 
     # get date
@@ -68,9 +64,7 @@ def get_trades():
     data["details"] = trade_details
     data["teams"] = parsedTeams
 
-
     ret.append(data)
-
 
   driver.quit()
   return ret
@@ -99,8 +93,7 @@ def get_signings():
   date = ''
   ret = []
 
-
-  for signing in signings:
+  for signing in signings[:5]:
     # swap out the date if it changes
     date_check = signing.find_elements(
       By.XPATH, './/div[contains(@class, "event-date")]')
@@ -133,7 +126,8 @@ def get_signings():
     tradeDetails = links[1].get_attribute('href')
 
     # TODO: fix this lol
-    name = nameLink.split("/")[-2].replace("-", " ").replace("%20", " ").title()
+    name = nameLink.split("/")[-2].replace("-", " ").replace("%20",
+                                                             " ").title()
 
     data = {
       'date': date,
@@ -157,10 +151,7 @@ def get_signings():
       'details': tradeDetails,
     }
 
-
     ret.append(data)
-
 
   driver.quit()
   return ret
-
