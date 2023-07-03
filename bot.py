@@ -6,6 +6,7 @@ import scraping
 import utils
 import time
 import db_tools
+import asyncio
 
 
 def run_discord_bot():
@@ -71,6 +72,8 @@ def run_discord_bot():
                     db_tools.removeChannel(channel)
                     removed = 1
             time.sleep(1)
+
+        await asyncio.sleep(2)
 
         # signings
         for signing in scraping.get_signings():

@@ -116,6 +116,7 @@ def get_signings():
         signingData = signing.find_element(By.XPATH, './/div[@class="EventDetails__cont"]')
 
         tmp = signingData.find_elements(By.XPATH, './/*')
+        # print([x.text for x in tmp])
 
         # team data
         teamAbbr = tmp[0].text
@@ -123,15 +124,17 @@ def get_signings():
 
 
         # contract data
-        contract = tmp[2].text
-        length = tmp[3].text.replace("yr", "year")
-        capHit = tmp[4].text
-        contractType = tmp[5].text
+        contract = tmp[6].text
+        length = tmp[7].text.replace("yr", "year")
+        capHit = tmp[8].text
+        contractType = tmp[9].text
+
+        # print(contract, length, capHit, contractType)
 
 
         # player data
-        age = tmp[6].text
-        position = tmp[7].text
+        age = tmp[10].text
+        position = tmp[11].text
 
         
         # urls
