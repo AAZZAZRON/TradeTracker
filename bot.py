@@ -4,17 +4,16 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 import scraping
 import utils
-import time
 import db_tools
-<<<<<<< HEAD
 from datetime import datetime
 import pytz
-=======
->>>>>>> b54e9860e7dd377cffc7fea5d6acd0240c4a9b1e
 import asyncio
+import nest_asyncio
+
+nest_asyncio.apply()
 
 
-def run_discord_bot(x):
+def run_discord_bot(): 
   load_dotenv()
   TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -22,13 +21,14 @@ def run_discord_bot(x):
   intents.message_content = True
   client = discord.Client(intents=intents)
 
+
   # Event: on_ready
   @client.event
   async def on_ready():
     # db_tools.init_db()  # remove keys from previous runs
     print(f'{client.user} is now running!')
-    check_alive.start()
     get_trades_and_signings.start()
+
 
   # Event: on_message
   @client.event
@@ -58,27 +58,27 @@ def run_discord_bot(x):
         await message.channel.send(
           "Channel is not subscribed to updates. No changes made.")
 
-  @tasks.loop(minutes=1)
-  async def check_alive():
-    if not x.is_alive():
-      await client.get_channel(1125077670816919612).send("Restarting thread")
-      x.start()
 
-  # scrape 10 minutes
-  @tasks.loop(minutes=10)
-  async def get_trades_and_signings():
-    tz_NY = pytz.timezone('America/New_York')
-    current_time = datetime.now(tz_NY).strftime("%H:%M:%S")
-    await client.get_channel(1125077670816919612).send(
-      f"**{current_time}**: Scraping...")
+  # ----------------------- SCRAPING ----------------------- #
 
+  async def send_trade_embeds():
+    print("get trades")
     # get all subscribed channels
     channels = db_tools.getChannels()  # or [1125077670816919612]
     removed = 0
 
     # trades
-    trades = scraping.get_trades()
+    coro = asyncio.to_thread(scraping.get_trades)
+
+    trades = await coro
+
+    check = db_tools.getLastTradeShown()
+    db_tools.setLastTradeShown(trades[0])
+    print(trades[0])
+
     for trade in trades:
+      if check == None or check == trade:
+        break
       embed = utils.create_trade_embed(trade)
       if removed:
         channels = db_tools.getChannels()
@@ -92,12 +92,24 @@ def run_discord_bot(x):
           removed = 1
       await asyncio.sleep(1)
 
-    await asyncio.sleep(5)
 
-<<<<<<< HEAD
+  async def send_signing_embeds():
+    print("get signings")
+    # get all subscribed channels
+    channels = db_tools.getChannels()  # or [1125077670816919612]
+    removed = 0
+
     # signings
-    signings = scraping.get_signings()
+    coro = asyncio.to_thread(scraping.get_signings)
+    signings = await coro
+
+    check = db_tools.getLastSigningShown()
+    db_tools.setLastSigningShown(signings[0])
+    print(signings[0])
+
     for signing in signings:
+      if check == None or check == signing:
+        break
       embed = utils.create_signing_embed(signing)
       if removed:
         channels = db_tools.getChannels()
@@ -110,30 +122,30 @@ def run_discord_bot(x):
           db_tools.removeChannel(channel)
           removed = 1
       await asyncio.sleep(1)
-=======
-        await asyncio.sleep(2)
 
-        # signings
-        for signing in scraping.get_signings():
-            embed = utils.create_signing_embed(signing)
-            if removed:
-                channels = db_tools.getChannels()
-                removed = 0
-            for channel in channels:
-                try:
-                    await client.get_channel(channel).send(embed=embed)
-                except AttributeError:
-                    print(f"Channel {channel} not found. Removing from db.")
-                    db_tools.removeChannel(channel)
-                    removed = 1
-            time.sleep(1)
-        
->>>>>>> b54e9860e7dd377cffc7fea5d6acd0240c4a9b1e
+
+
+  # scrape every 10 minutes
+  @tasks.loop(minutes=10)
+  async def get_trades_and_signings():
+    # start scraping
+    tz_NY = pytz.timezone('America/New_York')
+    start_time = datetime.now(tz_NY)
+    await client.get_channel(1125077670816919612).send(
+      f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
 
     
+    # actual scraping part
+    asyncio.run(send_trade_embeds())
+    asyncio.run(send_signing_embeds())
+
+
+    # end scraping    
     tz_NY = pytz.timezone('America/New_York')
-    current_time = datetime.now(tz_NY).strftime("%H:%M:%S")
+    end_time = datetime.now(tz_NY)
     await client.get_channel(1125077670816919612).send(
-      f"**{current_time}**: Done scraping")
+      f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**")
+
+
 
   client.run(TOKEN)

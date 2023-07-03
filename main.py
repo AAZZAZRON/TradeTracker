@@ -16,9 +16,5 @@ def run():
 
 if __name__ == '__main__':
   x = threading.Thread(target=run)
-<<<<<<< HEAD
-  bot.run_discord_bot(x)
-=======
   x.start()
   bot.run_discord_bot()
->>>>>>> b54e9860e7dd377cffc7fea5d6acd0240c4a9b1e

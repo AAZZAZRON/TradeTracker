@@ -1,7 +1,7 @@
 import pickledb
 
 
-def init_db():
+def init_db():  # remove keys from previous runs
     db = pickledb.load('data.db', False)
     if db.exists('last_trade'):
         db.rem('last_trade')
@@ -10,11 +10,12 @@ def init_db():
     db.dump()  # save the db
 
 
-def isLastTradeShown(data):
+
+def getLastTradeShown():
     db = pickledb.load('data.db', False)
     if db.exists('last_trade'):
-        return db.get('last_trade') == data
-    return True  # if key doesn't exist, then it's the first time running the bot
+        return db.get('last_trade')
+    return None  # if key doesn't exist, then it's the first time running the bot
 
 
 def setLastTradeShown(data):
@@ -23,17 +24,18 @@ def setLastTradeShown(data):
     db.dump()  # save the db
 
 
-def isLastSigningShown(data):
+def getLastSigningShown():
     db = pickledb.load('data.db', False)
     if db.exists('last_signing'):
-        return db.get('last_signing') == data
-    return True  # if key doesn't exist, then it's the first time running the bot
+        return db.get('last_signing')
+    return None  # if key doesn't exist, then it's the first time running the bot
 
 
 def setLastSigningShown(data):
     db = pickledb.load('data.db', False)
     db.set('last_signing', data)
     db.dump()  # save the db
+
 
 
 # channel stuff

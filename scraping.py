@@ -1,19 +1,18 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-import db_tools
-import functools
-import typing
-import asyncio
+
+
 
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
+
+
+
 '''
 scrapes website for trades
 returns all the ones that have not been shown (up to however many on initial load)
 '''
-
-
 def get_trades():
   chrome_options = Options()
   chrome_options.add_argument('--no-sandbox')
@@ -26,7 +25,7 @@ def get_trades():
   driver.get(trades_url)
   trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
   ret = []
-  first = None
+
 
   # get all of the data
   for trade in trades:
@@ -69,19 +68,11 @@ def get_trades():
     data["details"] = trade_details
     data["teams"] = parsedTeams
 
-    if first is None:
-      first = data
 
-    # check if these are new trades
-    if db_tools.isLastTradeShown(data):
-      break
-
-    # if new trade, add to return list
     ret.append(data)
 
+
   driver.quit()
-  print("setting last trade:", first)
-  db_tools.setLastTradeShown(first)
   return ret
 
 
@@ -107,7 +98,7 @@ def get_signings():
       By.XPATH, './/div[@class="event-details"]')
   date = ''
   ret = []
-  first = None
+
 
   for signing in signings:
     # swap out the date if it changes
@@ -142,8 +133,7 @@ def get_signings():
     tradeDetails = links[1].get_attribute('href')
 
     # TODO: fix this lol
-    name = nameLink.split("/")[-2].replace("-", " ").replace("%20",
-                                                             " ").title()
+    name = nameLink.split("/")[-2].replace("-", " ").replace("%20", " ").title()
 
     data = {
       'date': date,
@@ -167,22 +157,10 @@ def get_signings():
       'details': tradeDetails,
     }
 
-    if first is None:
-      first = data
-
-    # check if these are new signings
-    if db_tools.isLastSigningShown(data):
-      break
 
     ret.append(data)
 
+
   driver.quit()
-  print("setting last signup:", first)
-  db_tools.setLastSigningShown(first)
   return ret
 
-
-# if __name__ == '__main__':
-#     create_driver()
-#     get_trades()
-#     get_signings()
