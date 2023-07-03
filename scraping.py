@@ -1,22 +1,25 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import db_tools
 
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
 
 
-# checks if an element exists with the given xpath
-def element_exists(el, xpath):
-    return len(el.find_elements(By.XPATH, xpath)) > 0
-
-
 '''
 scrapes website for trades
 returns all the ones that have not been shown (up to however many on initial load)
 '''
-def get_trades():
-    driver = webdriver.Chrome()
+def get_trades():    
+    chrome_options = Options()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--ignore-certificate-error")
+    chrome_options.add_argument("--ignore-ssl-errors")
+    chrome_options.add_argument("log-level=3")
+
+    driver = webdriver.Chrome(options=chrome_options)    
     driver.get(trades_url)
     trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
     ret = []
@@ -33,15 +36,8 @@ def get_trades():
 
 
         # get teams
-        teamLeft = trade.find_element(By.XPATH, './/div[@class="team left"]')
-        teamRight = trade.find_element(By.XPATH, './/div[@class="team right"]')
-        isThirdTeam = element_exists(trade, './/div[@class="team center"]')
-        if isThirdTeam:
-            teamCenter = trade.find_element(By.XPATH, './/div[@class="team center"]')
-            teams = [teamLeft, teamCenter, teamRight]
-        else:
-            teams = [teamLeft, teamRight]
-        
+        teams = trade.find_elements(By.XPATH, './/div[contains(@class, "team ")]')
+
 
         # parse the data from the teams
         parsedTeams = []
@@ -52,10 +48,11 @@ def get_trades():
             acq = []
             for detail in details:
                 desc = detail.text
-                if element_exists(detail, './/a'):
-                    link = detail.find_element(By.XPATH, './/a').get_attribute('href')
-                else:
+                link = detail.find_elements(By.XPATH, './/a')
+                if len(link) == 0:
                     link = None
+                else:
+                    link = link[0].get_attribute('href')
                 acq.append({'desc': desc, 'link': link})            
             icon = team.find_element(By.XPATH, './/img').get_attribute('src')
             
@@ -64,8 +61,9 @@ def get_trades():
             teamData['acq'] = acq
             parsedTeams.append(teamData)
 
+
         # add data to the return list
-        data["date"] = date.text[:-10]
+        data["date"] = date.text[:10]
         data["details"] = trade_details
         data["teams"] = parsedTeams
 
@@ -93,7 +91,14 @@ scrapes website for signings
 returns all the ones that have not been shown (up to however many on initial load)
 '''
 def get_signings():
-    driver = webdriver.Chrome()
+    chrome_options = Options()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--ignore-certificate-error")
+    chrome_options.add_argument("--ignore-ssl-errors")
+    chrome_options.add_argument("log-level=3")
+
+    driver = webdriver.Chrome(options=chrome_options)
     driver.get(signings_url)
     signings = driver.find_element(By.XPATH, '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(By.XPATH, './/div[@class="event-details"]')
     date = ''
@@ -102,38 +107,40 @@ def get_signings():
 
     for signing in signings:
         # swap out the date if it changes
-        if element_exists(signing, './/div[@class="event-date"]'):
-            date = signing.find_element(By.XPATH, './/div[@class="event-date"]').text
-        elif element_exists(signing, './/div[@class="event-date tail"]'):
-            date = signing.find_element(By.XPATH, './/div[@class="event-date tail"]').text
+        date_check = signing.find_elements(By.XPATH, './/div[contains(@class, "event-date")]')
+        if len(date_check) > 0:
+            date = date_check[0].text
 
 
         # get the data for the signing and ignore mobile data
         signingData = signing.find_element(By.XPATH, './/div[@class="EventDetails__cont"]')
 
+        tmp = signingData.find_elements(By.XPATH, './/*')
 
         # team data
-        teamDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col team-details"]')
-        teamAbbr = teamDiv.text
-        teamIcon = teamDiv.find_element(By.XPATH, './/img').get_attribute('src')
+        teamAbbr = tmp[0].text
+        teamIcon = tmp[0].find_element(By.XPATH, './/img').get_attribute('src')
 
 
         # contract data
-        contract = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-total"]').text
-        length = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-length"]').text.replace("yr", "year")
-        capHit = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-cap-hit"]').text 
-        contractType = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-type"]').text 
+        contract = tmp[2].text
+        length = tmp[3].text.replace("yr", "year")
+        capHit = tmp[4].text
+        contractType = tmp[5].text
 
 
         # player data
-        nameDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col player-name"]')
-        name = nameDiv.text
-        nameLink = nameDiv.find_element(By.XPATH, './/a').get_attribute('href')
+        age = tmp[6].text
+        position = tmp[7].text
 
-        age = signingData.find_element(By.XPATH, './/div[@class="signings-col player-age"]').text 
-        position = signingData.find_element(By.XPATH, './/div[@class="signings-col player-position"]').text 
-        tradeDetails = signingData.find_element(By.XPATH, './/div[@class="signings-col signings-details"]').find_element(By.XPATH, './/a').get_attribute('href')
         
+        # urls
+        links = signingData.find_elements(By.XPATH, './/a')
+        name = links[0].text
+        nameLink = links[0].get_attribute('href')
+        tradeDetails = links[1].get_attribute('href')
+
+
         data = {
             'date': date,
             'team': {
@@ -164,6 +171,7 @@ def get_signings():
             print("setting last signup:", first)
             db_tools.setLastSigningShown(first)
             break
+
 
         ret.append(data)
 
