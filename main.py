@@ -1,5 +1,6 @@
 import bot
 from flask import Flask
+import threading
 
 app = Flask(__name__)
 
@@ -9,6 +10,11 @@ def handle_get_request():
   return "Success"
 
 
-if __name__ == '__main__':
-  bot.run_discord_bot()
+def run():
   app.run(host='0.0.0.0', port=8000)
+
+
+if __name__ == '__main__':
+  x = threading.Thread(target=run)
+  x.start()
+  bot.run_discord_bot()
