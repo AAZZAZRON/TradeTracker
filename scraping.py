@@ -63,7 +63,7 @@ def get_trades():
 
 
         # add data to the return list
-        data["date"] = date.text[:10]
+        data["date"] = date.text[:-10]
         data["details"] = trade_details
         data["teams"] = parsedTeams
 
