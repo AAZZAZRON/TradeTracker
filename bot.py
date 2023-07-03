@@ -6,8 +6,11 @@ import scraping
 import utils
 import time
 import db_tools
+<<<<<<< HEAD
 from datetime import datetime
 import pytz
+=======
+>>>>>>> b54e9860e7dd377cffc7fea5d6acd0240c4a9b1e
 import asyncio
 
 
@@ -91,6 +94,7 @@ def run_discord_bot(x):
 
     await asyncio.sleep(5)
 
+<<<<<<< HEAD
     # signings
     signings = scraping.get_signings()
     for signing in signings:
@@ -106,6 +110,25 @@ def run_discord_bot(x):
           db_tools.removeChannel(channel)
           removed = 1
       await asyncio.sleep(1)
+=======
+        await asyncio.sleep(2)
+
+        # signings
+        for signing in scraping.get_signings():
+            embed = utils.create_signing_embed(signing)
+            if removed:
+                channels = db_tools.getChannels()
+                removed = 0
+            for channel in channels:
+                try:
+                    await client.get_channel(channel).send(embed=embed)
+                except AttributeError:
+                    print(f"Channel {channel} not found. Removing from db.")
+                    db_tools.removeChannel(channel)
+                    removed = 1
+            time.sleep(1)
+        
+>>>>>>> b54e9860e7dd377cffc7fea5d6acd0240c4a9b1e
 
     
     tz_NY = pytz.timezone('America/New_York')

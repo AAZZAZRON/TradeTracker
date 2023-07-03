@@ -139,12 +139,11 @@ def get_signings():
     # urls
     links = signingData.find_elements(By.XPATH, './/a')
     nameLink = links[0].get_attribute('href')
+    tradeDetails = links[1].get_attribute('href')
 
     # TODO: fix this lol
     name = nameLink.split("/")[-2].replace("-", " ").replace("%20",
                                                              " ").title()
-
-    tradeDetails = links[1].get_attribute('href')
 
     data = {
       'date': date,
