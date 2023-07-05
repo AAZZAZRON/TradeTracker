@@ -101,29 +101,28 @@ def get_signings():
     # get the data for the signing and ignore mobile data
     signingData = signing.find_element(By.XPATH, './/div[@class="EventDetails__cont"]')
 
-    tmp = signingData.find_elements(By.XPATH, './/*') # child divs
 
     # team data
-    teamAbbr = tmp[0].text
-    teamIcon = tmp[0].find_element(By.XPATH, './/img').get_attribute('src')
+    teamDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col team-details"]')
+    teamAbbr = teamDiv.text
+    teamIcon = teamDiv.find_element(By.XPATH, './/img').get_attribute('src')
+
 
     # contract data
-    contract = tmp[6].text
-    length = tmp[7].text.replace("yr", "year")
-    capHit = tmp[8].text
-    contractType = tmp[9].text
+    contract = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-total"]').text
+    length = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-length"]').text.replace("yr", "year")
+    capHit = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-cap-hit"]').text 
+    contractType = signingData.find_element(By.XPATH, './/div[@class="signings-col contract-type"]').text 
+
 
     # player data
-    age = tmp[10].text
-    position = tmp[11].text
+    nameDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col player-name"]')
+    name = nameDiv.text
+    nameLink = nameDiv.find_element(By.XPATH, './/a').get_attribute('href')
+    age = signingData.find_element(By.XPATH, './/div[@class="signings-col player-age"]').text 
+    position = signingData.find_element(By.XPATH, './/div[@class="signings-col player-position"]').text 
+    tradeDetails = signingData.find_element(By.XPATH, './/div[@class="signings-col signings-details"]').find_element(By.XPATH, './/a').get_attribute('href')
 
-    # urls
-    links = signingData.find_elements(By.XPATH, './/a')
-    nameLink = links[0].get_attribute('href')
-    tradeDetails = links[1].get_attribute('href')
-
-    # TODO: fix this lol // currently gets player name from url
-    name = nameLink.split("/")[-2].replace("-", " ").replace("%20", " ").title()
 
     data = {
       'date': date,
@@ -141,8 +140,8 @@ def get_signings():
       'player': {
         'name': name,
         'link': nameLink,
-        'age': age,
-        'position': position,
+        'age': age or None,
+        'position': position or "No Position",
       },
       'details': tradeDetails,
     }

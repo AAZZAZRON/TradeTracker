@@ -38,7 +38,10 @@ def create_signing_embed(data):
   embed.set_thumbnail(url=data["team"]["icon"])
 
   player = data["player"]
-  player_value = f"{player['name']} - {player['position']}\n{player['age']} years old"
+  player_value = f"{player['name']} - {player['position']}"
+  if player["age"]:
+    player_value += f"\n{player['age']} years old"
+
   embed.add_field(name="Player: ", value=player_value, inline=False)
 
   contract = data["contract"]

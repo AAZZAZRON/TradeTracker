@@ -17,12 +17,8 @@ import nest_asyncio
 nest_asyncio.apply()
 
 
-<<<<<<< HEAD
-def run_discord_bot():
-=======
 def run_discord_bot(): 
   # set up discord client
->>>>>>> f6e7050a1b6f8ad4d8c1bf3dacb544d364a9cc1b
   load_dotenv()
   TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -52,8 +48,7 @@ def run_discord_bot():
       if db_tools.addChannel(message.channel.id):
         await message.channel.send(f"Channel **{message.channel.id}** subscribed to updates.")
       else:
-        await message.channel.send(
-          "Channel already subscribed. No changes made.")
+        await message.channel.send("Channel already subscribed. No changes made.")
     elif message.content == "!unsubscribechannel":  # remove channel from getting the updates
       if not message.author.guild_permissions.administrator:
         await message.channel.send("You don't have permission to do that!")
@@ -142,12 +137,9 @@ def run_discord_bot():
       # end scraping
       tz_NY = pytz.timezone('America/New_York')
       end_time = datetime.now(tz_NY)
-      await client.get_channel(1125077670816919612).send(
-        f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**"
-      )
+      await client.get_channel(1125077670816919612).send(f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**")
 
     except Exception as e:
-      await client.get_channel(1125077670816919612).send(
-        f"<@515698891673305089> an error occurred: `{e}`")
+      await client.get_channel(1125077670816919612).send(f"<@515698891673305089> an error occurred: `{e}`")
 
   client.run(TOKEN)
