@@ -1,3 +1,7 @@
+'''
+utility functions to create trade and signup embeds given the data
+'''
+
 import discord
 
 

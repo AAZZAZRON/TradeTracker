@@ -1,18 +1,22 @@
+'''
+uses selenium to scrape sportsnet for trades and signings
+'''
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
+
+
 '''
 scrapes website for trades
 returns all the ones that have not been shown (up to however many on initial load)
 '''
-
-
 def get_trades():
   chrome_options = Options()
-  chrome_options.add_argument('--no-sandbox')
+  chrome_options.add_argument('--no-sandbox') # required for replit
   chrome_options.add_argument('--disable-dev-shm-usage')
   chrome_options.add_argument("--ignore-certificate-error")
   chrome_options.add_argument("--ignore-ssl-errors")
@@ -51,7 +55,7 @@ def get_trades():
         acq.append({'desc': desc, 'link': link})
       icon = team.find_element(By.XPATH, './/img').get_attribute('src')
 
-      # TODO: fix this too
+      # TODO: fix this too // currently gets team name from image url
       teamName = icon.split("/")[-1].split(".")[0].replace("-", " ").title()
 
       teamData['name'] = teamName
@@ -74,8 +78,6 @@ def get_trades():
 scrapes website for signings
 returns all the ones that have not been shown (up to however many on initial load)
 '''
-
-
 def get_signings():
   chrome_options = Options()
   chrome_options.add_argument('--no-sandbox')
@@ -86,25 +88,20 @@ def get_signings():
 
   driver = webdriver.Chrome(options=chrome_options)
   driver.get(signings_url)
-  signings = driver.find_element(
-    By.XPATH,
-    '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(
-      By.XPATH, './/div[@class="event-details"]')
+  signings = driver.find_element(By.XPATH, '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(By.XPATH, './/div[@class="event-details"]')
   date = ''
   ret = []
 
   for signing in signings[:5]:
     # swap out the date if it changes
-    date_check = signing.find_elements(
-      By.XPATH, './/div[contains(@class, "event-date")]')
-    if len(date_check) > 0:
+    date_check = signing.find_elements(By.XPATH, './/div[contains(@class, "event-date")]')
+    if len(date_check) > 0: # if there is a date
       date = date_check[0].text
 
     # get the data for the signing and ignore mobile data
-    signingData = signing.find_element(By.XPATH,
-                                       './/div[@class="EventDetails__cont"]')
+    signingData = signing.find_element(By.XPATH, './/div[@class="EventDetails__cont"]')
 
-    tmp = signingData.find_elements(By.XPATH, './/*')
+    tmp = signingData.find_elements(By.XPATH, './/*') # child divs
 
     # team data
     teamAbbr = tmp[0].text
@@ -125,14 +122,13 @@ def get_signings():
     nameLink = links[0].get_attribute('href')
     tradeDetails = links[1].get_attribute('href')
 
-    # TODO: fix this lol
-    name = nameLink.split("/")[-2].replace("-", " ").replace("%20",
-                                                             " ").title()
+    # TODO: fix this lol // currently gets player name from url
+    name = nameLink.split("/")[-2].replace("-", " ").replace("%20", " ").title()
 
     data = {
       'date': date,
       'team': {
-        "name": teamAbbr,  # TODO: change to full name
+        "name": teamAbbr,  # TODO: change to full team name
         'abbr': teamAbbr,
         'icon': teamIcon
       },

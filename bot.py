@@ -1,3 +1,7 @@
+'''
+sets up discord bot + commands (on message + task.loop())
+'''
+
 import os
 import discord
 from discord.ext import tasks
@@ -13,7 +17,12 @@ import nest_asyncio
 nest_asyncio.apply()
 
 
+<<<<<<< HEAD
 def run_discord_bot():
+=======
+def run_discord_bot(): 
+  # set up discord client
+>>>>>>> f6e7050a1b6f8ad4d8c1bf3dacb544d364a9cc1b
   load_dotenv()
   TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -41,8 +50,7 @@ def run_discord_bot():
         await message.channel.send("You don't have permission to do that!")
         return
       if db_tools.addChannel(message.channel.id):
-        await message.channel.send(
-          f"Channel **{message.channel.id}** subscribed to updates.")
+        await message.channel.send(f"Channel **{message.channel.id}** subscribed to updates.")
       else:
         await message.channel.send(
           "Channel already subscribed. No changes made.")
@@ -51,11 +59,9 @@ def run_discord_bot():
         await message.channel.send("You don't have permission to do that!")
         return
       if db_tools.removeChannel(message.channel.id):
-        await message.channel.send(
-          f"Channel **{message.channel.id}** unsubscrubed!")
+        await message.channel.send(f"Channel **{message.channel.id}** unsubscrubed!")
       else:
-        await message.channel.send(
-          "Channel is not subscribed to updates. No changes made.")
+        await message.channel.send("Channel is not subscribed to updates. No changes made.")
 
   # ----------------------- SCRAPING ----------------------- #
 
@@ -65,19 +71,18 @@ def run_discord_bot():
     channels = db_tools.getChannels()  # or [1125077670816919612]
     removed = 0
 
-    # trades
+    # get the trades
     coro = asyncio.to_thread(scraping.get_trades)
-
     trades = await coro
 
-    check = db_tools.getLastTradeShown()
+    check = db_tools.getLastTradeShown()  # last one displayed
     db_tools.setLastTradeShown(trades[0])
     print(trades[0])
 
     for trade in trades:
-      if check == None or check == trade:
+      if check == None or check == trade:  # if trade is equal to last one displayed (as per db)
         break
-      embed = utils.create_trade_embed(trade)
+      embed = utils.create_trade_embed(trade) # create embed
       if removed:
         channels = db_tools.getChannels()
         removed = 0
@@ -123,16 +128,16 @@ def run_discord_bot():
   # scrape every x minutes
   @tasks.loop(minutes=20)
   async def get_trades_and_signings():
-    # start scraping
-    tz_NY = pytz.timezone('America/New_York')
-    start_time = datetime.now(tz_NY)
-    await client.get_channel(1125077670816919612).send(
-      f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
-
     try:
+      # start scraping
+      tz_NY = pytz.timezone('America/New_York')
+      start_time = datetime.now(tz_NY)
+      await client.get_channel(1125077670816919612).send(f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
+
       # actual scraping part
       asyncio.run(send_trade_embeds())
       asyncio.run(send_signing_embeds())
+
 
       # end scraping
       tz_NY = pytz.timezone('America/New_York')

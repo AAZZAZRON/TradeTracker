@@ -1,3 +1,7 @@
+'''
+database functions to get/set from pickledb
+'''
+
 import pickledb
 
 
