@@ -13,7 +13,7 @@ import nest_asyncio
 nest_asyncio.apply()
 
 
-def run_discord_bot(): 
+def run_discord_bot():
   load_dotenv()
   TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -21,14 +21,13 @@ def run_discord_bot():
   intents.message_content = True
   client = discord.Client(intents=intents)
 
-
   # Event: on_ready
   @client.event
   async def on_ready():
     # db_tools.init_db()  # remove keys from previous runs
+    await client.get_channel(1125077670816919612).send(f'{client.user} is now running!')
     print(f'{client.user} is now running!')
     get_trades_and_signings.start()
-
 
   # Event: on_message
   @client.event
@@ -57,7 +56,6 @@ def run_discord_bot():
       else:
         await message.channel.send(
           "Channel is not subscribed to updates. No changes made.")
-
 
   # ----------------------- SCRAPING ----------------------- #
 
@@ -92,7 +90,6 @@ def run_discord_bot():
           removed = 1
       await asyncio.sleep(1)
 
-
   async def send_signing_embeds():
     print("get signings")
     # get all subscribed channels
@@ -123,10 +120,8 @@ def run_discord_bot():
           removed = 1
       await asyncio.sleep(1)
 
-
-
-  # scrape every 10 minutes
-  @tasks.loop(minutes=10)
+  # scrape every x minutes
+  @tasks.loop(minutes=20)
   async def get_trades_and_signings():
     # start scraping
     tz_NY = pytz.timezone('America/New_York')
@@ -134,18 +129,20 @@ def run_discord_bot():
     await client.get_channel(1125077670816919612).send(
       f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
 
-    
-    # actual scraping part
-    asyncio.run(send_trade_embeds())
-    asyncio.run(send_signing_embeds())
+    try:
+      # actual scraping part
+      asyncio.run(send_trade_embeds())
+      asyncio.run(send_signing_embeds())
 
+      # end scraping
+      tz_NY = pytz.timezone('America/New_York')
+      end_time = datetime.now(tz_NY)
+      await client.get_channel(1125077670816919612).send(
+        f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**"
+      )
 
-    # end scraping    
-    tz_NY = pytz.timezone('America/New_York')
-    end_time = datetime.now(tz_NY)
-    await client.get_channel(1125077670816919612).send(
-      f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**")
-
-
+    except Exception as e:
+      await client.get_channel(1125077670816919612).send(
+        f"<@515698891673305089> an error occurred: `{e}`")
 
   client.run(TOKEN)
