@@ -1,5 +1,5 @@
 # TradeTracker
-Discord bot that scrapes sportsnet to find the most recent NHL trades and signings. Add the bot to your own server using [this link!](https://discord.com/api/oauth2/authorize?client_id=1125076817162801162&permissions=534723950656&scope=bot)
+Discord bot that scrapes sportsnet to find the most recent NHL trades and signings. Add the bot to your own server using [this link](https://discord.com/api/oauth2/authorize?client_id=1125076817162801162&permissions=534723950656&scope=bot)!
 
 ![Example of a trade](trade.png)
 
