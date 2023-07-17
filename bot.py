@@ -21,6 +21,8 @@ def run_discord_bot():
   # set up discord client
   load_dotenv()
   TOKEN = os.getenv('DISCORD_TOKEN')
+  ADMIN_CHANNEL = int(os.getenv('ADMIN_CHANNEL'))
+  ADMIN_ID = os.getenv('ADMIN_ID')
 
   intents = discord.Intents.default()
   intents.message_content = True
@@ -30,7 +32,7 @@ def run_discord_bot():
   @client.event
   async def on_ready():
     # db_tools.init_db()  # remove keys from previous runs
-    await client.get_channel(1125077670816919612).send(f'{client.user} is now running!')
+    await client.get_channel(ADMIN_CHANNEL).send(f'{client.user} is now running!')
     print(f'{client.user} is now running!')
     get_trades_and_signings.start()
 
@@ -61,9 +63,9 @@ def run_discord_bot():
   # ----------------------- SCRAPING ----------------------- #
 
   async def send_trade_embeds():
-    print("get trades")
+    # print("get trades")
     # get all subscribed channels
-    channels = db_tools.getChannels()  # or [1125077670816919612]
+    channels = db_tools.getChannels()  # or [ADMIN_CHANNEL]
     removed = 0
 
     # get the trades
@@ -72,7 +74,7 @@ def run_discord_bot():
 
     check = db_tools.getLastTradeShown()  # last one displayed
     db_tools.setLastTradeShown(trades[0])
-    print(trades[0])
+    # print(trades[0])
 
     for trade in trades:
       if check == None or check == trade:  # if trade is equal to last one displayed (as per db)
@@ -85,15 +87,15 @@ def run_discord_bot():
         try:
           await client.get_channel(channel).send(embed=embed)
         except AttributeError:  # if channel is deleted
-          print(f"Channel {channel} not found. Removing from db.")
+          # print(f"Channel {channel} not found. Removing from db.")
           db_tools.removeChannel(channel)
           removed = 1
       await asyncio.sleep(1)
 
   async def send_signing_embeds():
-    print("get signings")
+    # print("get signings")
     # get all subscribed channels
-    channels = db_tools.getChannels()  # or [1125077670816919612]
+    channels = db_tools.getChannels()  # or [ADMIN_CHANNEL]
     removed = 0
 
     # signings
@@ -102,7 +104,7 @@ def run_discord_bot():
 
     check = db_tools.getLastSigningShown()
     db_tools.setLastSigningShown(signings[0])
-    print(signings[0])
+    # print(signings[0])
 
     for signing in signings:
       if check == None or check == signing:
@@ -115,7 +117,7 @@ def run_discord_bot():
         try:
           await client.get_channel(channel).send(embed=embed)
         except AttributeError:
-          print(f"Channel {channel} not found. Removing from db.")
+          # print(f"Channel {channel} not found. Removing from db.")
           db_tools.removeChannel(channel)
           removed = 1
       await asyncio.sleep(1)
@@ -127,7 +129,7 @@ def run_discord_bot():
       # start scraping
       tz_NY = pytz.timezone('America/New_York')
       start_time = datetime.now(tz_NY)
-      await client.get_channel(1125077670816919612).send(f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
+      await client.get_channel(ADMIN_CHANNEL).send(f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
 
       # actual scraping part
       asyncio.run(send_trade_embeds())
@@ -137,9 +139,9 @@ def run_discord_bot():
       # end scraping
       tz_NY = pytz.timezone('America/New_York')
       end_time = datetime.now(tz_NY)
-      await client.get_channel(1125077670816919612).send(f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**")
+      await client.get_channel(ADMIN_CHANNEL).send(f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**")
 
     except Exception as e:
-      await client.get_channel(1125077670816919612).send(f"<@515698891673305089> an error occurred: `{e}`")
+      await client.get_channel(ADMIN_CHANNEL).send(f"<@{ADMIN_ID}> an error occurred: `{e}`")
 
   client.run(TOKEN)
