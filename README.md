@@ -1,5 +1,5 @@
 # TradeTracker
-Discord bot that scrapes Sportsnet to find the most recent NHL trades and signings. Allows one to receive hockey news through Discord! 
+TradeTracker is a Discord bot that scrapes Sportsnet to find the most recent NHL trades and signings. It allows you to receive hockey news through Discord! It was originally created to reduce the amount of hockey posts in my Instagram feed. 
 
 Add the bot to your own server using [this link](https://discord.com/api/oauth2/authorize?client_id=1125076817162801162&permissions=534723950656&scope=bot)!
 
