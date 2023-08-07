@@ -49,6 +49,7 @@ def run_discord_bot():
         return
       if db_tools.addChannel(message.channel.id):
         await message.channel.send(f"Channel **{message.channel.id}** subscribed to updates.")
+        await client.get_channel(ADMIN_CHANNEL).send(f"New channel **{message.channel.id}** subscribed to updates.")
       else:
         await message.channel.send("Channel already subscribed. No changes made.")
     elif message.content == "!unsubscribechannel":  # remove channel from getting the updates
@@ -57,6 +58,7 @@ def run_discord_bot():
         return
       if db_tools.removeChannel(message.channel.id):
         await message.channel.send(f"Channel **{message.channel.id}** unsubscrubed!")
+        await client.get_channel(ADMIN_CHANNEL).send(f"Channel **{message.channel.id}** unsubscribed to updates.")
       else:
         await message.channel.send("Channel is not subscribed to updates. No changes made.")
 
@@ -90,6 +92,8 @@ def run_discord_bot():
           # print(f"Channel {channel} not found. Removing from db.")
           db_tools.removeChannel(channel)
           removed = 1
+      if check["details"] == trade["details"]:  # if trade is equal to last one displayed (as per db) but modified
+        break
       await asyncio.sleep(1)
 
   async def send_signing_embeds():
@@ -120,6 +124,8 @@ def run_discord_bot():
           # print(f"Channel {channel} not found. Removing from db.")
           db_tools.removeChannel(channel)
           removed = 1
+      if check["details"] == signing["details"]:  # if signing is equal to last one displayed (as per db) but modified
+        break
       await asyncio.sleep(1)
 
   # scrape every x minutes
