@@ -107,7 +107,12 @@ def run_discord_bot():
     signings = await coro
 
     check = db_tools.getLastSigningShown()
-    db_tools.setLastSigningShown(signings[0])
+
+    while signings and signings[0]["player"]["name"] == "": # remove empty signings
+      signings.pop(0)
+
+    if signings:  
+      db_tools.setLastSigningShown(signings[0])
     # print(signings[0])
 
     for signing in signings:
@@ -124,7 +129,7 @@ def run_discord_bot():
           # print(f"Channel {channel} not found. Removing from db.")
           db_tools.removeChannel(channel)
           removed = 1
-      if check["details"] == signing["details"]:  # if signing is equal to last one displayed (as per db) but modified
+      if check["player"]["name"] == signing["player"]["name"]:  # if signing is equal to last one displayed (as per db) but modified
         break
       await asyncio.sleep(1)
 
