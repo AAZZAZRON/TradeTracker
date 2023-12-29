@@ -1,84 +1,19 @@
-'''
-uses selenium to scrape sportsnet for trades and signings
-'''
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+import db_tools
+import asyncio
+import discord
 
-trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'
+
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
-
-
-'''
-scrapes website for trades
-returns all the ones that have not been shown (up to however many on initial load)
-'''
-def get_trades():
-  chrome_options = Options()
-  chrome_options.add_argument('--no-sandbox') # required for replit
-  chrome_options.add_argument('--disable-dev-shm-usage')
-  chrome_options.add_argument("--ignore-certificate-error")
-  chrome_options.add_argument("--ignore-ssl-errors")
-  chrome_options.add_argument("log-level=3")
-
-  driver = webdriver.Chrome(options=chrome_options)
-  driver.get(trades_url)
-  trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
-  ret = []
-
-  # get all of the data
-  for trade in trades[:5]:
-    data = {}
-
-    # get date
-    date = trade.find_element(By.XPATH, './/div[@class="event-date"]')
-    trade_details = date.find_element(By.XPATH, './/a').get_attribute('href')
-
-    # get teams
-    teams = trade.find_elements(By.XPATH, './/div[contains(@class, "team ")]')
-
-    # parse the data from the teams
-    parsedTeams = []
-    for team in teams:
-      teamData = {}
-      teamName = team.find_element(By.XPATH, './/div[@class="team-name"]').text
-      details = team.find_elements(By.XPATH, './/div[@class="playerDetails"]')
-      acq = []
-      for detail in details:
-        desc = detail.text
-        link = detail.find_elements(By.XPATH, './/a')
-        if len(link) == 0:
-          link = None
-        else:
-          link = link[0].get_attribute('href')
-        acq.append({'desc': desc, 'link': link})
-      icon = team.find_element(By.XPATH, './/img').get_attribute('src')
-
-      # TODO: fix this too // currently gets team name from image url
-      teamName = icon.split("/")[-1].split(".")[0].replace("-", " ").title()
-
-      teamData['name'] = teamName
-      teamData['icon'] = icon
-      teamData['acq'] = acq
-      parsedTeams.append(teamData)
-
-    # add data to the return list
-    data["date"] = date.text[:-10]
-    data["details"] = trade_details
-    data["teams"] = parsedTeams
-
-    ret.append(data)
-
-  driver.quit()
-  return ret
 
 
 '''
 scrapes website for signings
 returns all the ones that have not been shown (up to however many on initial load)
 '''
-def get_signings():
+def scrape_signings():
   chrome_options = Options()
   chrome_options.add_argument('--no-sandbox')
   chrome_options.add_argument('--disable-dev-shm-usage')
@@ -150,3 +85,66 @@ def get_signings():
 
   driver.quit()
   return ret
+
+
+
+def create_signing_embed(data):
+  embed = discord.Embed(color=0xe1b51e)
+  embed.title = f'SIGNING: {data["player"]["name"]} to {data["team"]["name"]}'
+  embed.description = f'{data["date"]}'
+  embed.url = data["details"]
+  embed.set_thumbnail(url=data["team"]["icon"])
+
+  player = data["player"]
+  player_value = f"{player['name']} - {player['position']}"
+  if player["age"]:
+    player_value += f"\n{player['age']} years old"
+
+  embed.add_field(name="Player: ", value=player_value, inline=False)
+
+  contract = data["contract"]
+  contract_value = f"{contract['capHit']} x {contract['length']}\nTotal: {contract['total']}\nType: {contract['type']}"
+  embed.add_field(name="Contract: ", value=contract_value, inline=False)
+
+  return embed
+
+
+
+
+
+async def send_signing_embeds(client):
+    # print("get signings")
+    # get all subscribed channels
+    channels = db_tools.getChannels()  # or [ADMIN_CHANNEL]
+    removed = 0
+
+    # signings
+    coro = asyncio.to_thread(scrape_signings)
+    signings = await coro
+
+    check = db_tools.getLastSigningShown()
+
+    while signings and signings[0]["player"]["name"] == "": # remove empty signings
+      signings.pop(0)
+
+    if signings:  
+      db_tools.setLastSigningShown(signings[0])
+    # print(signings[0])
+
+    for signing in signings:
+      if check == None or check == signing:
+        break
+      embed = create_signing_embed(signing)
+      if removed:
+        channels = db_tools.getChannels()
+        removed = 0
+      for channel in channels:
+        try:
+          await client.get_channel(channel).send(embed=embed)
+        except AttributeError:
+          # print(f"Channel {channel} not found. Removing from db.")
+          db_tools.removeChannel(channel)
+          removed = 1
+      if check["player"]["name"] == signing["player"]["name"]:  # if signing is equal to last one displayed (as per db) but modified
+        break
+      await asyncio.sleep(1)

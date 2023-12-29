@@ -6,9 +6,9 @@ import os
 import discord
 from discord.ext import tasks
 from dotenv import load_dotenv
-import scraping.scrape_trades_signings as scrape_trades_signings
-import scraping.scrape_starting_goalies as scrape_starting_goalies
-import utils
+from features.signings import send_signing_embeds
+from features.trades import send_trade_embeds
+import features.scrape_starting_goalies as scrape_starting_goalies
 import db_tools
 from datetime import datetime
 import pytz
@@ -67,75 +67,6 @@ def run_discord_bot():
 
   # ----------------------- SCRAPING ----------------------- #
 
-  async def send_trade_embeds():
-    # print("get trades")
-    # get all subscribed channels
-    channels = db_tools.getChannels()  # or [ADMIN_CHANNEL]
-    removed = 0
-
-    # get the trades
-    coro = asyncio.to_thread(scrape_trades_signings.get_trades)
-    trades = await coro
-
-    check = db_tools.getLastTradeShown()  # last one displayed
-    db_tools.setLastTradeShown(trades[0])
-    # print(trades[0])
-
-    for trade in trades:
-      if check == None or check == trade:  # if trade is equal to last one displayed (as per db)
-        break
-      embed = utils.create_trade_embed(trade) # create embed
-      if removed:
-        channels = db_tools.getChannels()
-        removed = 0
-      for channel in channels:
-        try:
-          await client.get_channel(channel).send(embed=embed)
-        except AttributeError:  # if channel is deleted
-          # print(f"Channel {channel} not found. Removing from db.")
-          db_tools.removeChannel(channel)
-          removed = 1
-      if check["details"] == trade["details"]:  # if trade is equal to last one displayed (as per db) but modified
-        break
-      await asyncio.sleep(1)
-
-  async def send_signing_embeds():
-    # print("get signings")
-    # get all subscribed channels
-    channels = db_tools.getChannels()  # or [ADMIN_CHANNEL]
-    removed = 0
-
-    # signings
-    coro = asyncio.to_thread(scrape_trades_signings.get_signings)
-    signings = await coro
-
-    check = db_tools.getLastSigningShown()
-
-    while signings and signings[0]["player"]["name"] == "": # remove empty signings
-      signings.pop(0)
-
-    if signings:  
-      db_tools.setLastSigningShown(signings[0])
-    # print(signings[0])
-
-    for signing in signings:
-      if check == None or check == signing:
-        break
-      embed = utils.create_signing_embed(signing)
-      if removed:
-        channels = db_tools.getChannels()
-        removed = 0
-      for channel in channels:
-        try:
-          await client.get_channel(channel).send(embed=embed)
-        except AttributeError:
-          # print(f"Channel {channel} not found. Removing from db.")
-          db_tools.removeChannel(channel)
-          removed = 1
-      if check["player"]["name"] == signing["player"]["name"]:  # if signing is equal to last one displayed (as per db) but modified
-        break
-      await asyncio.sleep(1)
-
   # scrape every x minutes
   @tasks.loop(minutes=20)
   async def get_trades_and_signings():
@@ -146,8 +77,8 @@ def run_discord_bot():
       await client.get_channel(ADMIN_CHANNEL).send(f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
 
       # actual scraping part
-      asyncio.run(send_trade_embeds())
-      asyncio.run(send_signing_embeds())
+      asyncio.run(send_trade_embeds(client))
+      asyncio.run(send_signing_embeds(client))
 
 
       # end scraping
