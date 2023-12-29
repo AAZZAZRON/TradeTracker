@@ -5,9 +5,9 @@ Add the bot to your own server using [this link](https://discord.com/api/oauth2/
 
 Created with discord.py and Selenium. 
 
-![Example of a trade](trade.png)
+![Example of a trade](static/trade.png)
 
-![Example of a signing](signing.png)
+![Example of a signing](static/signing.png)
 
 ## Commands
 `!subscribechannel` - bot will send any new scraped updates to that channel [Admin only].

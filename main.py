@@ -19,6 +19,6 @@ def run():
 
 
 if __name__ == '__main__':
-  x = threading.Thread(target=run)  # flask is in a thread so it doesn't block
-  x.start()
+  # x = threading.Thread(target=run)  # flask is in a thread so it doesn't block
+  # x.start()
   bot.run_discord_bot()

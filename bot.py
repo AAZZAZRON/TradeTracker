@@ -6,7 +6,8 @@ import os
 import discord
 from discord.ext import tasks
 from dotenv import load_dotenv
-import scraping
+import scraping.scrape_trades_signings as scrape_trades_signings
+import scraping.scrape_starting_goalies as scrape_starting_goalies
 import utils
 import db_tools
 from datetime import datetime
@@ -35,6 +36,8 @@ def run_discord_bot():
     await client.get_channel(ADMIN_CHANNEL).send(f'{client.user} is now running!')
     print(f'{client.user} is now running!')
     get_trades_and_signings.start()
+    # get_starting_goalies.start()
+
 
   # Event: on_message
   @client.event
@@ -71,7 +74,7 @@ def run_discord_bot():
     removed = 0
 
     # get the trades
-    coro = asyncio.to_thread(scraping.get_trades)
+    coro = asyncio.to_thread(scrape_trades_signings.get_trades)
     trades = await coro
 
     check = db_tools.getLastTradeShown()  # last one displayed
@@ -103,7 +106,7 @@ def run_discord_bot():
     removed = 0
 
     # signings
-    coro = asyncio.to_thread(scraping.get_signings)
+    coro = asyncio.to_thread(scrape_trades_signings.get_signings)
     signings = await coro
 
     check = db_tools.getLastSigningShown()
@@ -154,5 +157,26 @@ def run_discord_bot():
 
     except Exception as e:
       await client.get_channel(ADMIN_CHANNEL).send(f"<@{ADMIN_ID}> an error occurred: `{e}`")
+
+
+  @tasks.loop(minutes=20)
+  async def get_starting_goalies():
+    try:
+      # start scraping
+      tz_NY = pytz.timezone('America/New_York')
+      start_time = datetime.now(tz_NY)
+      await client.get_channel(ADMIN_CHANNEL).send(f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
+
+      # actual scraping part
+      scrape_starting_goalies.get_starters()
+
+      # end scraping
+      tz_NY = pytz.timezone('America/New_York')
+      end_time = datetime.now(tz_NY)
+      await client.get_channel(ADMIN_CHANNEL).send(f"**{end_time.strftime('%H:%M:%S')}**: Done scraping. Time spent: **{end_time - start_time}**")
+
+    except Exception as e:
+      await client.get_channel(ADMIN_CHANNEL).send(f"<@{ADMIN_ID}> an error occurred: `{e}`")
+
 
   client.run(TOKEN)
