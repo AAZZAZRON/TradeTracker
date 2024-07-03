@@ -1,7 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 import db_tools
 import asyncio
 import discord
@@ -15,13 +14,6 @@ scrapes website for signings
 returns all the ones that have not been shown (up to however many on initial load)
 '''
 def scrape_signings():
-  chrome_options = Options()
-  chrome_options.add_argument('--no-sandbox')
-  chrome_options.add_argument('--disable-dev-shm-usage')
-  chrome_options.add_argument("--ignore-certificate-error")
-  chrome_options.add_argument("--ignore-ssl-errors")
-  chrome_options.add_argument("log-level=3")
-
   chrome_service = Service(r"/usr/lib/chromium-browser/chromedriver")
 
   driver = webdriver.Chrome(service=chrome_service)
@@ -30,7 +22,7 @@ def scrape_signings():
   date = ''
   ret = []
 
-  for signing in signings[:5]:
+  for signing in signings[:10]:
     # swap out the date if it changes
     date_check = signing.find_elements(By.XPATH, './/div[contains(@class, "event-date")]')
     if len(date_check) > 0: # if there is a date

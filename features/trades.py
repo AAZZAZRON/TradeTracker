@@ -1,7 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 import db_tools
 import asyncio
 import discord
@@ -14,13 +13,6 @@ scrapes website for trades
 returns all the ones that have not been shown (up to however many on initial load)
 '''
 def scrape_trades():
-  chrome_options = Options()
-  chrome_options.add_argument('--no-sandbox') # required for replit
-  chrome_options.add_argument('--disable-dev-shm-usage')
-  chrome_options.add_argument("--ignore-certificate-error")
-  chrome_options.add_argument("--ignore-ssl-errors")
-  chrome_options.add_argument("log-level=3")
-
   chrome_service = Service(r"/usr/lib/chromium-browser/chromedriver")
 
   driver = webdriver.Chrome(service=chrome_service)
@@ -29,7 +21,7 @@ def scrape_trades():
   ret = []
 
   # get all of the data
-  for trade in trades[:5]:
+  for trade in trades[:10]:
     data = {}
 
     # get date

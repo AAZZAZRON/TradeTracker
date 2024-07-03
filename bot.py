@@ -68,7 +68,7 @@ def run_discord_bot():
   # ----------------------- SCRAPING ----------------------- #
 
   # scrape every x minutes
-  @tasks.loop(minutes=20)
+  @tasks.loop(minutes=10)
   async def get_trades_and_signings():
     try:
       # start scraping
