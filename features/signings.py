@@ -53,7 +53,7 @@ def scrape_signings():
     # player data
     nameDiv = signingData.find_element(By.XPATH, './/div[@class="signings-col player-name"]')
     name = nameDiv.text
-    nameLink = nameDiv.find_element(By.XPATH, './/a').get_attribute('href')
+    # nameLink = nameDiv.find_element(By.XPATH, './/a').get_attribute('href')
     age = signingData.find_element(By.XPATH, './/div[@class="signings-col player-age"]').text 
     position = signingData.find_element(By.XPATH, './/div[@class="signings-col player-position"]').text 
     tradeDetails = signingData.find_element(By.XPATH, './/div[@class="signings-col signings-details"]').find_element(By.XPATH, './/a').get_attribute('href')
@@ -74,7 +74,7 @@ def scrape_signings():
       },
       'player': {
         'name': name,
-        'link': nameLink,
+        # 'link': nameLink,
         'age': age or None,
         'position': position or "No Position",
       },
