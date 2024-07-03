@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import db_tools
@@ -20,7 +21,9 @@ def scrape_trades():
   chrome_options.add_argument("--ignore-ssl-errors")
   chrome_options.add_argument("log-level=3")
 
-  driver = webdriver.Chrome(options=chrome_options)
+  chrome_service = Service(r"/usr/lib/chromium-browser/chromedriver")
+
+  driver = webdriver.Chrome(service=chrome_service)
   driver.get(trades_url)
   trades = driver.find_elements(By.XPATH, '//div[@class="event-details"]')
   ret = []
