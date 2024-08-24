@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import db_tools
 import asyncio
 import discord
@@ -15,8 +16,19 @@ returns all the ones that have not been shown (up to however many on initial loa
 '''
 def scrape_signings():
   chrome_service = Service(r"/usr/lib/chromium-browser/chromedriver")
+  chrome_options = Options()
+  chrome_options.add_argument("start-maximized")
+  chrome_options.add_argument("disable-infobars")
+  chrome_options.add_argument("--disable-extensions")
+  chrome_options.add_argument("--disable-gpu")
+  chrome_options.add_argument("--disable-dev-shm-usage")
+  chrome_options.add_argument("--no-sandbox")
+  chrome_options.add_argument("--ignore-certificate-error")
+  chrome_options.add_argument("--ignore-ssl-errors")
+  chrome_options.add_argument("log-level=3")
 
-  driver = webdriver.Chrome(service=chrome_service)
+
+  driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
   driver.get(signings_url)
   signings = driver.find_element(By.XPATH, '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(By.XPATH, './/div[@class="event-details"]')
   date = ''
