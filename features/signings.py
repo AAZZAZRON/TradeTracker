@@ -15,7 +15,6 @@ scrapes website for signings
 returns all the ones that have not been shown (up to however many on initial load)
 '''
 def scrape_signings():
-  chrome_service = Service(r"/usr/lib/chromium-browser/chromedriver")
   chrome_options = Options()
   chrome_options.add_argument("start-maximized")
   chrome_options.add_argument("disable-infobars")
@@ -26,9 +25,10 @@ def scrape_signings():
   chrome_options.add_argument("--ignore-certificate-error")
   chrome_options.add_argument("--ignore-ssl-errors")
   chrome_options.add_argument("log-level=3")
+  chrome_options.add_argument("--enable-unsafe-swiftshader")
 
 
-  driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+  driver = webdriver.Chrome(options=chrome_options)
   driver.get(signings_url)
   signings = driver.find_element(By.XPATH, '//div[@class="TradeSigningsTracker__inner signings"]').find_elements(By.XPATH, './/div[@class="event-details"]')
   date = ''

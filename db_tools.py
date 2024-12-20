@@ -40,6 +40,34 @@ def setLastSigningShown(data):
     db.set('last_signing', data)
     db.dump()  # save the db
 
+# goalie stuff
+def getLastDateSaved():
+    db = pickledb.load('data.db', False)
+    if db.exists('date'):
+        return db.get('date')
+    return None  # if key doesn't exist, then it's the first time running the bot
+
+def setLastDateSaved(data):
+    db = pickledb.load('data.db', False)
+    db.set('date', data)
+    db.dump()  # save the db
+
+def getLastGoalieData():
+    db = pickledb.load('data.db', False)
+    if db.exists('goalies'):
+        return db.get('goalies')
+    return None  # if key doesn't exist, then it's the first time running the bot
+
+def setLastGoalieData(data):
+    db = pickledb.load('data.db', False)
+    db.set('goalies', data)
+    db.dump()  # save the db
+
+def setRequests(data):
+    db = pickledb.load('data.db', False)
+    db.set('requests', data)
+    db.dump()  # save the db
+
 
 
 # channel stuff

@@ -20,7 +20,7 @@ nest_asyncio.apply()
 
 def run_discord_bot(): 
   # set up discord client
-  load_dotenv()
+  load_dotenv(override=True)
   TOKEN = os.getenv('DISCORD_TOKEN')
   ADMIN_CHANNEL = int(os.getenv('ADMIN_CHANNEL'))
   ADMIN_ID = os.getenv('ADMIN_ID')
@@ -35,8 +35,8 @@ def run_discord_bot():
     # db_tools.init_db()  # remove keys from previous runs
     await client.get_channel(ADMIN_CHANNEL).send(f'{client.user} is now running!')
     print(f'{client.user} is now running!')
-    get_trades_and_signings.start()
-    # get_starting_goalies.start()
+    # get_trades_and_signings.start()
+    get_starting_goalies.start()
 
 
   # Event: on_message
@@ -90,7 +90,7 @@ def run_discord_bot():
       await client.get_channel(ADMIN_CHANNEL).send(f"<@{ADMIN_ID}> an error occurred: `{e}`")
 
 
-  @tasks.loop(minutes=20)
+  @tasks.loop(minutes=10)
   async def get_starting_goalies():
     try:
       # start scraping
@@ -99,7 +99,7 @@ def run_discord_bot():
       await client.get_channel(ADMIN_CHANNEL).send(f"**{start_time.strftime('%H:%M:%S')}**: Scraping...")
 
       # actual scraping part
-      scrape_starting_goalies.get_starters()
+      asyncio.run(scrape_starting_goalies.handle_starting_goalie_requests())
 
       # end scraping
       tz_NY = pytz.timezone('America/New_York')
