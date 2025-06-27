@@ -16,6 +16,7 @@ returns all the ones that have not been shown (up to however many on initial loa
 '''
 def scrape_trades():
   chrome_options = Options()
+  chrome_options.add_argument("--headless")  # Run in headless mode
   chrome_options.add_argument("start-maximized")
   chrome_options.add_argument("disable-infobars")
   chrome_options.add_argument("--disable-extensions")
