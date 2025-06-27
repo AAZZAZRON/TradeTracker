@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 
 import db_tools
 import asyncio
-import discord
+# import discord
 
 
 trades_url = 'https://www.sportsnet.ca/hockey/nhl/trade-tracker'

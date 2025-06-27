@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import db_tools
 import asyncio
-import discord
+# import discord
 
 
 signings_url = 'https://www.sportsnet.ca/hockey/nhl/signings'
